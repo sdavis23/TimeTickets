@@ -38,7 +38,7 @@ class Invoice
 			'traveltime' => $lineItem->traveltime,
 			'labour_description' => $lineItem->description,
 			'emp_rate' => $occupation->rate,
-			'labour_total' => $lineItem->reg*$rate + $lineItem->overtime*($rate*1.5) + $rate*$lineItem->traveltime );
+			'labour_total' => $lineItem->totalCost() );
 
 	}
 
@@ -98,7 +98,7 @@ class Invoice
 
 		while($current_index < count($totaled_equipment) )
 		{
-			array_push($final_array, array_merge($totaled_equipment[$current_index], $this->emptyLineItem()) );
+			array_push($final_array, array_merge($totaled_equipment[$current_index], $this->emptyLabourItem()) );
 
 			$current_index++;
 		}
@@ -301,8 +301,6 @@ class Invoice
 
 
 			
-
-		
 		}
 		else
 		{

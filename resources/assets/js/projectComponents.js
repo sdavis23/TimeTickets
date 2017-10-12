@@ -2,7 +2,7 @@ import {EmployeeTableView, dailyTicketDefaultRow, dailyTicketStateChange, dailyT
 import {EquipmentTableView, defaultEquipmentRow, equipmentLineStateChange, equipmentLineItemToDisplayRow} from "./equipmentTable.js";
 import {loadEquipmentAndLabour, loadAllDailyTickets, loadLabourLineItems, loadDailyTicketViewData, loadEmployeeTableData, loadEquipmentTableData} from "./loadLaravelData.js";
 import {createDataTable} from "./dataTable.js"
-import {OnSiteButton, OnSiteLinkButton, displayJobSelection, filterProjects, ProjectPicker} from "./render_cell_utils.js";
+import {OnSiteButton, OnSiteLinkButton, displayJobSelection, filterProjects, ProjectPicker, sendToServer} from "./render_cell_utils.js";
 
 import React, { Component } from 'react';
 import ReactDOM from 'react-dom';
@@ -127,64 +127,6 @@ function saveRows(rows, savedURL, rowItemToSavedItem)
     return sendToServer(rows, savedURL, rowItemToSavedItem)
 }
 
-      /*
-        Applies rowItemToJSON to each item in rows,
-          and send the stringified data in a POST request
-          to the server specified with url
-
-          Returns: a promise that resolves with the responseText parsed.
-
-      */
-function sendToServer(rows, URL, rowItemToJSON)
-{
-
-	console.log("URL : " + URL + ", Rows: " + JSON.stringify(rows));
-
-   	var save_json = JSON.stringify(
-     
-         rows.map(
-          function(rowitem)
-          {
-
-             console.log("Row Item ID: " + rowitem.id);
-
-             return rowItemToJSON(rowitem);
-
-         }));
-
-        //console.log("Save JSON: " + save_json);
-
-
-     return new Promise(function(resolve, reject)
-      {
-          $.ajax({
-            type: "POST",
-            url: URL,
-        
-            // The key needs to match your method's input parameter (case-sensitive).
-            data: save_json,
-            contentType: "application/json",
-     
-            success: function(data){ console.log("Success: " + data); },
-
-            failure: function(errMsg) {
-              console.log("Fail: " + errMsg);
-            },
-
-            complete: function(response)
-            {
-        
-              console.log("Saved Response: " + JSON.stringify(response));
-              // this is where we'll put the resolve code
-              resolve(JSON.parse(response.responseText));
-
-            }
-
-        });
-
-      });
-
- }
 
  
 
@@ -473,7 +415,7 @@ export class DailyWorkTicketEditor extends Component
 			else
 			{
 				super_id = supervisor_lines[0].employee
-				super_line_id = supervisor_lines[0].id
+				
 			}
 
 			console.log("Supervisor Length: " + supervisor_lines.length);
@@ -534,7 +476,7 @@ export class DailyWorkTicketEditor extends Component
 				equipment_delete: this.state.equipment_delete,
 				save_clicked: true,
 				modal_open: false,
-				save_data: {dailyticket_id: id, supervisor_id: super_id, supervisor_line_item_id: super_line_id, date: this.state.current_date, project_id: selected_project.id} });
+				save_data: {dailyticket_id: id, supervisor_id: super_id, date: this.state.current_date, project_id: selected_project.id} });
 		}
 		//console.log("Supervisor Count: " + JSON.stringify(supervisor_lines));
 	}

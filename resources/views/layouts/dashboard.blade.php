@@ -37,29 +37,30 @@
 
                         </li>
                        
-                       
-                        <li >
-                            <a href="#"><i class="fa fa-table fa-fw"></i> Time Tickets<span class="fa arrow"></span></a>
-                            <ul class="nav nav-second-level">
-                                <li {{ (Request::is('*panels') ? 'class="active"' : '') }}>
-                                    <a href="{{ url ('timeticket_edit/NEW') }}">New Ticket </a>
-                                </li>
-                                 <li {{ (Request::is('*panels') ? 'class="active"' : '') }}>
-                                    <a href="{{ url ('calendar') }}">View Calendar</a>
-                                </li>
-                                <li {{ (Request::is('*buttons') ? 'class="active"' : '') }}>
-                                    <a href="{{ url ('dailyworkticket_GeneratePDF' ) }}">Print PDF</a>
-                                </li>
-                                <li {{ (Request::is('*notifications') ? 'class="active"' : '') }}>
-                                    <a href="{{ url('employee_edit/NEW') }}">Add Employee</a>
-                                </li>
-                                <li {{ (Request::is('*typography') ? 'class="active"' : '') }}>
-                                    <a href="{{ url ('project_edit/NEW') }}">Add Project</a>
-                                </li>
+                       @if(!Auth::user()->is_draftsmen || Auth::user()->is_admin)
+                            <li >
+                                <a href="#"><i class="fa fa-table fa-fw"></i> Time Tickets<span class="fa arrow"></span></a>
+                                <ul class="nav nav-second-level">
+                                    <li {{ (Request::is('*panels') ? 'class="active"' : '') }}>
+                                        <a href="{{ url ('timeticket_edit/NEW') }}">New Ticket </a>
+                                    </li>
+                                    <li {{ (Request::is('*panels') ? 'class="active"' : '') }}>
+                                        <a href="{{ url ('calendar') }}">View Calendar</a>
+                                    </li>
+                                    <li {{ (Request::is('*buttons') ? 'class="active"' : '') }}>
+                                        <a href="{{ url ('dailyworkticket_GeneratePDF' ) }}">Print PDF</a>
+                                    </li>
+                                    <li {{ (Request::is('*notifications') ? 'class="active"' : '') }}>
+                                        <a href="{{ url('employee_edit/NEW') }}">Add Employee</a>
+                                    </li>
+                                    <li {{ (Request::is('*typography') ? 'class="active"' : '') }}>
+                                        <a href="{{ url ('project_edit/NEW') }}">Add Project</a>
+                                    </li>
                                 
-                            </ul>
+                                    </ul>
                             <!-- /.nav-second-level -->
-                        </li>
+                            </li>
+                        @endif
 
                          <li >
                             <a href="#"><i class="fa fa-table fa-fw"></i> Config  Data<span class="fa arrow"></span></a>
@@ -76,21 +77,55 @@
                                     <a href="{{ url ('customer_rep_index_view') }}">Customer Reps</a>
                                 </li>
 
-                                 <li {{ (Request::is('*panels') ? 'class="active"' : '') }}>
-                                    <a href="{{ url ('customer_rep_edit/NEW') }}">New Customer Rep</a>
-                                </li>
+                                 
 
                                  <li {{ (Request::is('*panels') ? 'class="active"' : '') }}>
                                     <a href="{{ url ('client_index_view' ) }}">Clients</a>
                                 </li>
 
-                                 <li {{ (Request::is('*panels') ? 'class="active"' : '') }}>
-                                    <a href="{{ url ('client_edit/NEW') }}">New Client</a>
-                                </li>
+                                 
+                                 @if(Auth::user()->is_admin)
+                                    <li {{ (Request::is('*panels') ? 'class="active"' : '') }}>
+                                        <a href="{{ url ('draft_colour_edit' ) }}">Draft Tasks Colour</a>
+                                    </li>
+                                @endif
                                
                                 </li>
                                 
                             </ul>
+                            <!-- /.nav-second-level -->
+                        </li>
+
+                         <li >
+
+                           @if(Auth::user()->is_draftsmen || Auth::user()->is_admin)
+                                <a href="#"><i class="fa fa-table fa-fw"></i> Draftsmen and Scanning<span class="fa arrow"></span></a>
+                                <ul class="nav nav-second-level">
+                                    
+                                  
+                                        <li {{ (Request::is('*panels') ? 'class="active"' : '') }}>
+                                            <a href="{{ url ('project_task_employee') }}">Review Tasks</a>
+                                        </li>
+
+
+                                        <li {{ (Request::is('*panels') ? 'class="active"' : '') }}>
+                                            <a href="{{ url ('project_completion_view') }}">Project Completion</a>
+                                        </li>
+                                   
+
+
+
+                                    @if(Auth::user()->is_admin)
+                                        <li {{ (Request::is('*panels') ? 'class="active"' : '') }}>
+                                             <a href="{{ url ('task_index_view') }}">Tasks</a>
+                                        </li>
+                                    @endif
+                               
+                                </li>
+                                
+                                </ul>
+
+                            @endif
                             <!-- /.nav-second-level -->
                         </li>
                         

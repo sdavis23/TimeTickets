@@ -22,6 +22,9 @@ use App\SuiteComponents\ProjectSuite;
 use App\SuiteComponents\AccountSuite;
 use App\SuiteComponents\DailyWorkTicketSuite;
 use App\SuiteComponents\CustomerRepSuite;
+use App\SuiteComponents\TaskSuite;
+use App\SuiteComponents\ProjectTaskSuite;
+use App\SuiteComponents\DraftsmenHighlightSuite;
 use App\Providers\SuiteUserProvider;
 use App\Invoice;
 
@@ -30,15 +33,92 @@ use App\Invoice;
 
 
 
+Route::get("project_percentages", 
+	function()
+	{
+		$project_suite = new ProjectSuite();
+		return $project_suite->projectCompletion();
+	});
+
+Route::get("project_completion_view", 
+	function()
+	{
+		
+		return view('project_completion');
+	});
 
 Route::get('/', function () {
     return view('welcome');
 });
 
 
+
+Route::post("/project_trello_update", 
+		function(Request $r)
+		{
+			$project_suite = new ProjectSuite();
+
+			$project_task_suite = new ProjectTaskSuite();
+			$employee_suite = new EmployeeSuite();
+
+
+
+
+			$trello_update_data = $r->all();
+			$employee_suite->updateEmployees($trello_update_data['members']);
+			$project_task_suite->updateTasks($trello_update_data['tasks']);
+
+			return $project_suite->updateProjects($trello_update_data['projects']);
+			//$trello_tasks = $trello_update_data['tasks'];
+
+			
+
+		});
+
+
 Route::get('/employees', 'EmployeeController@index');
 Route::get('/occupations', 'OccupationController@index');
 Route::get('/equipment', 'EquipmentController@index');
+
+Route::get("/draft_colour_json", 
+	function()
+	{
+		$suite = new DraftsmenHighlightSuite();
+
+		return $suite->index();
+
+
+	});
+
+Route::get('/employee_trello', 
+	function()
+	{
+
+		$suite = new EmployeeSuite();
+
+		return $suite->getTrelloUsers();
+
+	});
+
+Route::get("/draft_colour_edit", 
+	function()
+	{
+		
+		return view('draft_colour_edit');
+
+
+	});
+
+Route::post("/save_draft_datahighlight", 
+	function(Request $request)
+	{
+
+		$highlight_controller = new DraftsmenHighlightSuite();
+		//echo "Data: " . print_r($employee_data, true);
+
+		return $highlight_controller->save_array($request->all());
+
+	})->middleware('auth');
 
 Route::post("/save_employee", 
 	function(Request $request)
@@ -49,13 +129,16 @@ Route::post("/save_employee",
 		$employee_controller = new EmployeeSuite();
 		//echo "Data: " . print_r($employee_data, true);
 
-		return $employee_controller->save( $employee_data['id'], 
+		return $employee_controller->save(  $employee_data['id'], 
 											$employee_data['first_name'], 
 											$employee_data['last_name'], 
 											$employee_data['initials'],
 											$employee_data['is_admin'], 
 											$employee_data['email'], 
-											$employee_data['occ_ids']);
+											$employee_data['occ_ids'],
+											$employee_data['is_draftsmen'],
+											$employee_data['trello_username'], 
+											$employee_data['trello_token']);
 	})->middleware('auth');
 
 Route::post("/save_project", 
@@ -73,7 +156,8 @@ Route::post("/save_project",
 											$project_data['location'], 
 											$project_data['rep_id'], 
 											$project_data['name'], 
-											$project_data['old_job_num']);
+											$project_data['old_job_num'],
+											$project_data['budget']);
 	})->middleware('auth');
 
 
@@ -223,15 +307,15 @@ Route::post("/dailyticket_savesummary",
 
 					$date = \DateTime::createFromFormat($format, $request_data['date']);
 
-					$id = $workticket_suite->save($request_data['dailyticket_id'], "NA-00", $request_data['date'], $request_data['project_id']);
+					$id = $workticket_suite->save($request_data['dailyticket_id'], $request_data['date'], $request_data['project_id']);
 					
-					if($request_data['supervisor_id'] != "NONE")
+					if($request_data['dailyticket_id'] == "NEW")
 					{
 
 						$suite_occ = new OccupationSuite();
 						$line_suite = new LabourLineItemSuite();
 
-						return $suite_occ->rectifyTicketNumbers($line_suite->getModelByID($request_data['supervisor_line_item_id']), $request_data['supervisor_id'], $id);
+						$suite_occ->generateTicketNumber($request_data['supervisor_id'], $id);
 
 					}
 					
@@ -421,6 +505,27 @@ Route::get("/employee_index_view",
 
 		})->middleware('auth');
 
+Route::get("/project_task_employee", 
+			function()
+			{
+
+				return view('project_task_employee');
+
+
+			});
+
+
+Route::get("/project_task_employee_json/{emp_id}", 
+			function($emp_id)
+			{
+
+				$project_task_suite = new ProjectTaskSuite();
+
+				return array($project_task_suite->getEmployeeProjectData($emp_id));
+
+
+			});
+
 Route::get("/project_index_view",
 		function()
 		{
@@ -465,25 +570,132 @@ Route::get('/employee_json/{id}',
 		})->middleware('auth');
 
 
+
 Route::get('/test', 
 	function()
 	{
 
-		$suite_occ = new OccupationSuite();
-		$line_suite = new LabourLineItemSuite();
+		$project_suite = new ProjectSuite();
 
-		return $suite_occ->rectifyTicketNumbers($line_suite->getModelByID('3152079d-0e50-9af6-aac1-59c569c5962f'), "e6b73c8e-406f-e293-eb1d-597e23758a8e", "717bf559-b12d-ff3b-f008-59c56956a049");
+		return array_map(
+			function($project) use($project_suite)
+			{
+				return array("id" => $project->id, "name" => $project->name, "Total Cost: " =>$project_suite->totalCost($project->id));
 
+
+			}, $project_suite->index());
+
+		//return $project_suite->index*
 	});
+
 
 Route::get("/project_index", 
 	function()
 	{
 		$project_suite = new ProjectSuite();
 
-		return $project_suite->get_list();
+		return $project_suite->index();
 
 	})->middleware('auth');
+
+Route::get("/task_index", 
+	function()
+	{
+
+		$task_suite = new TaskSuite();
+
+		return $task_suite->index();
+
+	});
+
+
+Route::get("/task_json/{id}", 
+	function($id)
+	{
+
+		$task_suite = new TaskSuite();
+
+		return array($task_suite->getModelByID($id));
+
+	});
+
+
+Route::get("/task_edit/{id}", 
+	function($id)
+	{
+
+		return view('task_edit', ['task_id' => $id ]);
+	});
+	
+
+Route::get("/task_index_view", 
+	function()
+	{
+
+		return view('task_index_view');
+
+	});
+
+Route::post("/save_task", 
+	function(Request $request)
+	{
+
+		$task_data = $request->all();
+		$task_suite = new TaskSuite();
+
+		return $task_suite->save($task_data['id'], $task_data['name'], $task_data['estimated_time'], $task_data['description']);
+
+	});
+
+Route::post("/delete_project_tasks", 
+			function(Request $request)
+			{
+
+				$tasks = $request->all();
+				$task_suite = new ProjectTaskSuite();
+
+				for($i = 0; $i < count($tasks); $i++)
+				{
+					$task_suite->delete(	$tasks[$i]["id"] );
+				}
+				
+			});
+
+Route::post("/save_project_tasks", 
+			function(Request $request)
+			{
+
+				$task_suite = new ProjectTaskSuite();
+				
+				return $task_suite->save_task_array($request->all());
+			});
+
+Route::get("/project_task_index", 
+	function()
+	{
+
+		$project_task_suite = new ProjectTaskSuite();
+
+		return $project_task_suite->index();
+
+	});
+
+
+Route::get('/project_task_edit/{id}', 
+	function ($id) 
+	{
+	  $project_suite = new ProjectSuite();
+   	 return view('project_task_edit', ["project" => $project_suite->getModelByID($id) ]);
+	});
+
+
+Route::get('/project_task_json/{project_id}', 
+	function ($project_id) 
+	{
+   	 	$project_task_suite = new ProjectTaskSuite();
+   	 	return $project_task_suite->getByProjectID($project_id);
+
+	});
 
 
 Route::get("/calendar", 
@@ -501,6 +713,8 @@ Route::get('/login_page', array('as' => 'login',
 		return view('welcome');
 		
 	}));
+
+
 
 Route::post("/login/", 
 	function(Request $request)

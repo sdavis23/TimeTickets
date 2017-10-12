@@ -69,6 +69,17 @@ class DailyWorkTicketSuite extends SuiteTimeTicketModelController
 		}
 	}
 
+
+
+	public function getByProjectID($project_id)
+	{
+		return array_values(array_filter($this->get_list(), 
+							function($workticket) use ($project_id)
+							{
+								return $workticket->project->id == $project_id;
+							}));
+	}
+
 	/*
 		Gives the tickets that falls within [date_start, date_end] inclusive.
 		and belong to the $job_number
@@ -81,11 +92,17 @@ class DailyWorkTicketSuite extends SuiteTimeTicketModelController
 
 	}
 
+	public function index($query = "", $order_by="")
+	{
+
+		return $this->getModelObjects($query, $order_by, 70);
+	}
+
 	public function get_list($query = "", $order_by = "")
 	{
 		
-
-		return $this->getModelObjects($query, $order_by, 70);
+		return $this->index($query, $order_by);
+		
 	}
 
 	protected function sugarObjectToModelObject($sugar_pointcloud)
@@ -100,7 +117,7 @@ class DailyWorkTicketSuite extends SuiteTimeTicketModelController
 		return new DailyWorkTicket(	$ticket->id->value,
 									$ticket->ticketnum->value,
 									$ticket->date_dailywork_c->value,
-									$proj_controller->getModelById($this->getFirstLinkedValue($sugar_pointcloud, 0)->id->value));
+									$this->getFirstLinkedValue($sugar_pointcloud, 0)->id->value);
 
 	}
 
@@ -127,17 +144,16 @@ class DailyWorkTicketSuite extends SuiteTimeTicketModelController
 		id - NEW is a flag dictating that this is a new record.
 
 	*/
-	public function save($id, $ticket_number, $date, $project)
+	public function save($id, $date, $project)
 	{
 
-		
+			$record_vals = array(	"date_dailywork_c" => $date );
 
 
 		if($id == "NEW")
 		{
 
-			$record_vals = array(	"ticketnum" => $ticket_number, 
-									"date_dailywork_c" => $date );
+		
 
 			$result = $this->client->saveNewRecord($this->moduleName(), $record_vals);
 			
@@ -147,8 +163,7 @@ class DailyWorkTicketSuite extends SuiteTimeTicketModelController
 		else
 		{
 
-			$record_vals = array(	"ticketnum" => $ticket_number, 
-									"date_dailywork_c" => $date );
+			
 
 			$result = $this->client->saveExistingRecord($this->moduleName(), $id, $record_vals);
 			

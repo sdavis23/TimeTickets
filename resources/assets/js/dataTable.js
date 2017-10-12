@@ -17,13 +17,14 @@ export function createDataTable(TableToDisplay,  defaultRow, stateChangeFunction
 
       super(props);
 
-      //console.log("createDataTable Props: " + JSON.stringify(props));
+      console.log("createDataTable Props: " + JSON.stringify(props));
 
 
       this.cellChange = this.cellChange.bind(this);
       this.addRow = this.addRow.bind(this);
       this.rowClick = this.rowClick.bind(this);
       this.deleteRow = this.deleteRow.bind(this);
+      this.displayButtons = this.displayButtons.bind(this);
     
 
       this.state = {selected_rows: [], rows: this.props.rows, deleted_rows: []};
@@ -177,8 +178,28 @@ export function createDataTable(TableToDisplay,  defaultRow, stateChangeFunction
 
     }
 
+    displayButtons()
+    {
+      var button_array = []
+
+      if(this.props.onRowAdd != undefined)
+      {
+        button_array.push( <OnSiteButton onClick=  {(e) => this.addRow()} text = "Add Row" />);
+      }
+
+      if(this.props.onRowDelete != undefined)
+      {
+        button_array.push(<OnSiteButton onClick = {(e) => this.deleteRow()} text = "Delete Row" />);
+      }
+
+      return button_array;
+
+    }
+
     render()
     {
+
+      console.log("DATA TABLE RENDER: " + JSON.stringify(this.cellChange));
 
 
         return (
@@ -193,9 +214,9 @@ export function createDataTable(TableToDisplay,  defaultRow, stateChangeFunction
 
                                 highlightedRows = {this.state.selected_rows} /> 
 
-
-                  <OnSiteButton onClick=  {(e) => this.addRow()} text = "Add Row" />
-                  <OnSiteButton onClick = {(e) => this.deleteRow()} text = "Delete Row" />
+                  {this.displayButtons()}
+                 
+                  
                   
                 </div>);
 

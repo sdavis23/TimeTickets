@@ -161,22 +161,28 @@ x\:* {behavior:url(#default#VML);}
   <tr class =lineItems height=21 style='height:15.6pt'>
     <td colspan=2 height=21 class=xl118 style='height:15.6pt'>{{$line_item['emp_name']}}</td>
     <td class=xl78 style='overflow: hidden; border-top:none'>{{$line_item['emp_occ']}}</td>
-    <td class=xl67 align=right style='border-top:none;border-left:none'>{{ $line_item['emp_rate']}}</td>
-    <td class=xl67 align=right style='border-top:none;border-left:none'>{{$line_item['emp_reg']}}</td>
-    <td class=xl67 align=right style='border-top:none;border-left:none'>{{$line_item['emp_ot']}}</td>
-    <td class=xl67 style='border-top:none;border-left:none'>{{$line_item['emp_trvl']}}</td>
+    <td class=xl67 align=right style='overflow: hidden;border-top:none;border-left:none'>{{ $line_item['emp_rate']}}</td>
+    <td class=xl67 align=right style='overflow: hidden;border-top:none;border-left:none'>{{$line_item['emp_reg']}}</td>
+    <td class=xl67 align=right style='overflow: hidden;border-top:none;border-left:none'>{{$line_item['emp_ot']}}</td>
+    <td class=xl67 style='overflow: hidden;border-top:none;border-left:none'>{{$line_item['emp_trvl']}}</td>
 
     @if($line_item['emp_total'] === "&nbsp;")
-       <td  class=xl75 style='border-top:none;border-left:none;text-align:center;'>&nbsp;</td>
+       <td  class=xl75 style='overflow: hidden;border-top:none;border-left:none;text-align:center;'>&nbsp;</td>
     @else
-      <td  class=xl75 style='border-top:none;border-left:none;text-align:center;'><div class = currency>{{$line_item['emp_total']}}</div></td>
+      <td  class=xl75 style='overflow: hidden;border-top:none;border-left:none;text-align:center;'><div class = currency>{{$line_item['emp_total']}}</div></td>
     @endif
     
-    <td class=xl69 style='border-top:none'>{{$line_item['equip_name']}}</td>
-    <td colspan=2 class=xl83 style='border-right:.5pt solid black;border-left:none'>{{$line_item['equip_unitNo']}}</td>
-    <td class=xl71 style='border-top:none;border-left:none'>{{$line_item['equip_rate']}}</td>
-    <td class=xl71 style='border-top:none;border-left:none'>{{$line_item['equip_hours']}}</td>
-    <td class=xl76 style='border-top:none;border-left:none'>{{$line_item['equip_total']}}</td>
+    <td class=xl69 style='overflow: hidden;border-top:none'>{{$line_item['equip_name']}}</td>
+    <td colspan=2 class=xl83 style='overflow: hidden;border-right:.5pt solid black;border-left:none'>{{$line_item['equip_unitNo']}}</td>
+    <td class=xl71 style='overflow: hidden;border-top:none;border-left:none'>{{$line_item['equip_rate']}}</td>
+    <td class=xl71 style='overflow: hidden;border-top:none;border-left:none'>{{$line_item['equip_hours']}}</td>
+
+    @if($line_item['equip_total'] === "&nbsp;")
+       <td  class=xl75 style='overflow: hidden;border-top:none;border-left:none;text-align:center;'>&nbsp;</td>
+    @else
+      <td  class=xl75 style='overflow: hidden;border-top:none;border-left:none;text-align:center;'><div class = currency>{{$line_item['equip_total']}}</div></td>
+    @endif
+   
   </tr>
  @endforeach
 

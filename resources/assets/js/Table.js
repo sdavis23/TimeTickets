@@ -38,15 +38,22 @@ export  class Table extends Component
 
 	render()
 	{
+		const children = React.Children.toArray(this.props.children);
 
-		const headers = React.Children.map(this.props.children, (child, i) => {
+		const non_null_children = children.filter(
+										(child, i) => {
+											return child != null;
+										});
+
+		const headers = non_null_children.map((child, i) => {
           // Ignore the first child
           
+
           	return (<HeaderCell>{child.props.header}</HeaderCell>);
       });
 
 
-		const children = React.Children.toArray(this.props.children);
+		
 		
 
 		var row_index = 0;
@@ -64,7 +71,7 @@ export  class Table extends Component
 
 
 			console.log("Going into Loop!");
-			var columns = React.Children.map(this.props.children, (child, i) => {
+			var columns = non_null_children.map( (child, i) => {
 		
 				var props = {
 
@@ -82,6 +89,7 @@ export  class Table extends Component
 			});
 
 			let ri = row_index;
+
 
 			rows.push(<tr onClick={() => this.rowClick(ri)} key ={ri} >{columns}</tr>);
 		}

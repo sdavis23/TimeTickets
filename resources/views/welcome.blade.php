@@ -60,6 +60,11 @@
                                     window.location.href = "/timeticket_edit/NEW";
                                 }
                             }
+
+                            else
+                            {
+                                   errorMessage();
+                            }
                             
 
                         }
@@ -92,9 +97,10 @@
     </head>
     <body>
        
-         <div class="g-signin2" id = "SignIn" data-onsuccess="onSignIn"></div>
+         <div class="g-signin2" id = "SignIn"  data-onsuccess="onSignIn"></div>
          <img  id = "Logo" src="/images/CompanyLogo.PNG" alt="ONSITELOGO" style="width:344px;height:62px;top:75px">
-         <div id = "example" style="position: absolute; width: 100%;"></div>
+         <div id = "example" style="position: absolute; width: 100%;left:50%;top:40%;"></div>
+
            
     </body>
 </html>

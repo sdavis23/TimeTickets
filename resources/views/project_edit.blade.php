@@ -9,7 +9,7 @@
            $(document).ready(function()
            {
             
-            	loadProjectForm('{{$project_id}}');
+            	loadProjectForm('{{$project_id}}', {{Auth::user()->is_admin}});
            });
            
 

@@ -50,6 +50,16 @@ class LabourLineItem implements \JsonSerializable
 		$this->date_entered = $date_entered;
 	}
 
+	public function totalCost()
+	{
+		$occ_suite = new OccupationSuite();
+		$occupation = $occ_suite->getModelById($this->occ_id);
+		$rate = $occupation->rate;
+
+
+		return $this->reg*$rate + $this->overtime*($rate*1.5) + $rate*$this->traveltime;
+	}	
+
 
 	 public function jsonSerialize() 
 	 {
@@ -133,9 +143,8 @@ class LabourLineItemSuite extends SuiteTimeTicketModelController
 	protected function deleteLineItem($id)
 	{
 
-		$client = new MainSuiteClient();
-
-		return $client->deleteExistingRecord($this->moduleName(), $id);
+		
+		return $this->client->deleteExistingRecord($this->moduleName(), $id);
 	}
 
 	/**

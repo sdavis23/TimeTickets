@@ -25,6 +25,66 @@ String.prototype.hashCode = function() {
   return hash;
 };
 
+
+      /*
+        Applies rowItemToJSON to each item in rows,
+          and send the stringified data in a POST request
+          to the server specified with url
+
+          Returns: a promise that resolves with the responseText parsed.
+
+      */
+export function sendToServer(rows, URL, rowItemToJSON)
+{
+
+  console.log("URL : " + URL + ", Rows: " + JSON.stringify(rows));
+
+    var save_json = JSON.stringify(
+     
+         rows.map(
+          function(rowitem)
+          {
+
+             console.log("Row Item ID: " + rowitem.id);
+
+             return rowItemToJSON(rowitem);
+
+         }));
+
+        //console.log("Save JSON: " + save_json);
+
+
+     return new Promise(function(resolve, reject)
+      {
+          $.ajax({
+            type: "POST",
+            url: URL,
+        
+            // The key needs to match your method's input parameter (case-sensitive).
+            data: save_json,
+            contentType: "application/json",
+     
+            success: function(data){ console.log("Success: " + data); },
+
+            failure: function(errMsg) {
+              console.log("Fail: " + errMsg);
+            },
+
+            complete: function(response)
+            {
+        
+              console.log("Saved Response: " + JSON.stringify(response));
+              // this is where we'll put the resolve code
+              resolve(JSON.parse(response.responseText));
+
+            }
+
+        });
+
+      });
+
+ }
+
 export function ProjectPicker(props)
 {
 
@@ -129,6 +189,14 @@ export function filterEquipment(equipment, search_value)
 
 }
 
+export function taskFilter(task, search_value)
+{
+
+
+  return  task.name.includes(search_value);
+
+}
+
 
 /*
 
@@ -171,8 +239,10 @@ export function filterEquipment(equipment, search_value)
   rowColour - function that takes in a row Index and returns a colour
 
 */
-export function createNumberColumn(colIndex, val, header, cellChange, rowColour)
+export function createNumberColumn(colIndex, val, header, cellChange, rowColour, is_disabled = false)
 {
+
+  console.log("COLUMN KEY: " + (colIndex + header));
 
   return  (<Column
             key = {colIndex+header}
@@ -180,7 +250,7 @@ export function createNumberColumn(colIndex, val, header, cellChange, rowColour)
             cell={props => (
                     renderCell(props.rowIndex, props.width, props.height, colIndex,
                        
-                      (rowIndex, width, height) =>  <input type = "number" min="0" max="1000"  key = {colIndex}  onChange={(e) => cellChange(rowIndex, colIndex, e.target.value)} value = {val(rowIndex)} />, rowColour) ) }
+                      (rowIndex, width, height) =>  <input type = "number" min="0" max="1000"  disabled={is_disabled} key = {colIndex}  onChange={(e) => cellChange(rowIndex, colIndex, e.target.value)} value = {val(rowIndex)} />, rowColour) ) }
          
             width={number_cell_width} />);
 
@@ -226,10 +296,8 @@ export function createLinkColumn(colIndex, val, url, header, rowColour)
 
 }
 
-export function createTextColumn(colIndex, val, header, cellChange, rowColour)
+export function createCheckBoxColumn(colIndex, val, header,  rowColour, is_disabled=false)
 {
-
-
 
 
   return  (<Column
@@ -237,7 +305,26 @@ export function createTextColumn(colIndex, val, header, cellChange, rowColour)
               header={header}
               cell={props => (
                 renderCell(props.rowIndex, props.width, props.height,  colIndex,
-                      (rowIndex, width, height) => <input type = "text" key = {rowIndex.toString()+colIndex.toString()} onChange={(e) => cellChange(props.rowIndex, colIndex, e.target.value)} value = {val(rowIndex)} />, rowColour) ) }
+                      (rowIndex, width, height) => <input type = "checkBox" disabled={is_disabled} key = {rowIndex.toString()+colIndex.toString()}  checked = {val(rowIndex)} />, rowColour) ) }
+          
+          width={500} />); 
+
+
+}
+
+export function createTextColumn(colIndex, val, header, cellChange, rowColour, is_disabled=false)
+{
+
+
+  return  (<Column
+              key = {colIndex+header}
+              header={header}
+              cell={props => (
+                renderCell(props.rowIndex, props.width, props.height,  colIndex,
+                      (rowIndex, width, height) => <input type = "text" disabled={is_disabled} 
+                                                                        key = {rowIndex.toString()+colIndex.toString()} 
+                                                                        onChange={(e) => cellChange(props.rowIndex, colIndex, e.target.value)} 
+                                                                        value = {val(rowIndex)} />, rowColour) ) }
           
           width={500} />); 
 
@@ -305,7 +392,7 @@ console.log("Column Key: " + (colIndex + header));
 }
 
 
-class TableComboBox extends Component
+export class TableComboBox extends Component
 {
 
   constructor(props)
@@ -334,6 +421,8 @@ class TableComboBox extends Component
   {
 
     this.setState({value: value});
+
+
   }
 
   render()

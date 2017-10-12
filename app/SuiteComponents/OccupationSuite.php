@@ -82,17 +82,16 @@ class OccupationSuite extends SuiteTimeTicketModelController
 	/**
 	*	@param labour_compare - the line item we are comparing, labour_lineitem to.
 	*	@param labour_lineItem - a line item on the labours of the work ticket
-	*	@param date_str - the date in a string: that we are interested in
-	*   @param before_given_date - boolean: true means we are filtering for those worktickets
-	*			that come before or on the given date.
+	*
 	**/
 
-	private function filterIsSupervisor($labour_compare, $labour_lineItem, $date_str, $before_given_date)
+	private function filterIsSupervisor($labour_lineItem)
 	{
 
 		// first test if the occupation is a supervisor
-		if($this->isOccupationSupervisor($labour_lineItem->occ_id))
-		{
+		return $this->isOccupationSupervisor($labour_lineItem->occ_id);
+		
+		/*{
 
 			$workticket_suite = new DailyWorkTicketSuite();
 
@@ -152,7 +151,7 @@ class OccupationSuite extends SuiteTimeTicketModelController
 		{
 			//echo "Is Supervisor Failed";
 			return false;
-		}
+		} */
 
 	}
 
@@ -165,7 +164,7 @@ class OccupationSuite extends SuiteTimeTicketModelController
 	*	@return the work ticket models that have supervisor_id as a supervisor  and occur either before or date_str
 	*		depending on if before_given_date is true or false, respectively
 	**/
-	private function grabSupervisorTickets($itemCompare, $supervisor_id, $date_str, $before_given_date)
+	private function grabSupervisorTickets($supervisor_id)
 	{
 
 
@@ -175,10 +174,10 @@ class OccupationSuite extends SuiteTimeTicketModelController
 		//echo "Outer Date: " . $date . "\n";
 
 		$filter_func = 
-			function($labour_lineItem) use($date_str, $itemCompare, $before_given_date)
+			function($labour_lineItem) 
 			{
 
-				return $this->filterIsSupervisor($itemCompare, $labour_lineItem, $date_str, $before_given_date);
+				return $this->filterIsSupervisor( $labour_lineItem);
 
 			};
 
@@ -200,7 +199,7 @@ class OccupationSuite extends SuiteTimeTicketModelController
 	*	@param date - the date, represented by a string, that corresponds to the tickets we are pulling from, after
 	* 	@param number - the number by which the 
 	**/
-	private function adjustTicketNumbersAfter($itemCompare, $emp_id, $date, $number)
+	/*private function adjustTicketNumbersAfter($itemCompare, $emp_id, $date, $number)
 	{
 
 		$employee_suite = new EmployeeSuite();
@@ -248,13 +247,13 @@ class OccupationSuite extends SuiteTimeTicketModelController
 
 
 		
-	}
+	} */
 
-	private function adjustTicketNumbers($itemCompare, $supervisor, $date, $number, $workticket_suite, $date_before)
+	/*private function adjustTicketNumbers($itemCompare, $supervisor, $date, $number, $workticket_suite, $date_before)
 	{
 
 
-		$tickets = $this->grabSupervisorTickets($itemCompare, $supervisor->id, $date, $date_before);
+		$tickets = $this->grabSupervisorTickets($itemCompare, $supervisor->id);
 
 		usort($tickets, 
 			function($ticket_a, $ticket_b)
@@ -290,21 +289,21 @@ class OccupationSuite extends SuiteTimeTicketModelController
 			$workticket_suite->saveTicketNumber($tickets[$i]['work_ticket']->id, $this->makeTicketNumber($supervisor, \DateTime::createFromFormat("Y-m-d", $tickets[$i]['work_ticket']->date), $number + $i + 1));
 		}
 
-	}
+	} */
 
 	/**
 	* 
-	* @param itemCompare - the labour item we are comparing to for the date.
+	* 
 	* @param emp_id
 	* @return - the number of times that the employee corresponding to $emp_id appears as a supervisor
 	* 	on a daily line item that is not itemCompare
 	*
 	**/
-	private function countSupervisor($itemCompare, $emp_id, $date)
+	private function countSupervisor($emp_id)
 	{
 		
 
-		$tickets = $this->grabSupervisorTickets($itemCompare, $emp_id, $date, true);
+		$tickets = $this->grabSupervisorTickets($emp_id);
 		return count($tickets);
 
 
@@ -320,11 +319,10 @@ class OccupationSuite extends SuiteTimeTicketModelController
 	*	@param supervisor_id - the id of the supervisor on workticket_id
 	*	@param workticket_id - the id of the work ticket that is being inserted or
 	*			updated
-	* 	@param date_str - the date we are worried about.
-	*
+	* 	
 	*	@return - the daily work ticket number to use for said date.
 	*/
-	public function rectifyTicketNumbers($lineCompare, $supervisor_id, $workticket_id)
+	public function  generateTicketNumber($supervisor_id, $workticket_id)
 	{
 		$employee_suite = new EmployeeSuite();
 		$workticket_suite = new DailyWorkTicketSuite();
@@ -332,14 +330,13 @@ class OccupationSuite extends SuiteTimeTicketModelController
 
 		$employee = $employee_suite->getModelById($supervisor_id);
 
-		$number = ((int)$this->countSupervisor($lineCompare, $supervisor_id, $workticket->date)) + 1;
+		$number = ((int)$this->countSupervisor($supervisor_id)) + 1;
 		$date = \DateTime::createFromFormat("Y-m-d", $workticket->date);
 
 		$workticket_suite->saveTicketNumber($workticket_id, $this->makeTicketNumber($employee, 
 			$date, $number));
 
-		$this->adjustTicketNumbers($lineCompare, $employee, $workticket->date, $number, $workticket_suite, false);
-		$this->adjustTicketNumbers($lineCompare, $employee, $workticket->date, 0, $workticket_suite, true);
+		return $number;
 
 		
 	}

@@ -30,6 +30,7 @@ export default class ProjectForm extends Component
     	this.locationChange = this.locationChange.bind(this);
     	this.dateChange = this.dateChange.bind(this);
     	this.customerRepChange = this.customerRepChange.bind(this);
+    	this.budgetChange = this.budgetChange.bind(this);
 
 
     	var date_init;
@@ -56,6 +57,7 @@ export default class ProjectForm extends Component
     		location: this.props.project.location,
     		system_num: this.props.project.job_num,
     		contact_id: this.props.project.customer_rep.id,
+    		budget: this.props.project.budget,
     		error_msg: "",
             succ_msg: ""
 
@@ -80,6 +82,7 @@ export default class ProjectForm extends Component
 			location: this.state.location,
 			name: this.state.name.trim(),
 			old_job_num: this.state.old_job_num.trim(),
+			budget: this.state.budget,
 			date: dateFormat(this.state.date, "yyyy-mm-dd")
 
 		};
@@ -105,6 +108,7 @@ export default class ProjectForm extends Component
     					location: self.state.location,
     					system_num: self.state.system_num,
     					contact_id: self.state.contact_id,
+    					budget: self.state.budget,
     					error_msg: resp_data.msg,
                         succ_msg: ""
 
@@ -123,6 +127,7 @@ export default class ProjectForm extends Component
     					location: self.state.location,
     					system_num: self.state.system_num,
     					contact_id: self.state.contact_id,
+    					budget: self.state.budget,
                         error_msg: "",
                         succ_msg: "Project Saved!"
                     });
@@ -142,6 +147,7 @@ export default class ProjectForm extends Component
 			date: this.state.date,
 			system_num: this.state.system_num,
 			contact_id: this.state.contact_id,
+			budget: this.state.budget,
 			error_msg: this.state.error_msg,
             succ_msg: this.state.succ_msg
 		});
@@ -159,6 +165,7 @@ export default class ProjectForm extends Component
 			date: this.state.date,
 			system_num: this.state.system_num,
 			contact_id: this.state.contact_id,
+			budget: this.state.budget,
 			error_msg: this.state.error_msg,
             succ_msg: this.state.succ_msg
 		});
@@ -192,6 +199,7 @@ export default class ProjectForm extends Component
 			date: date,
 			system_num: this.state.system_num,
 			contact_id: this.state.contact_id,
+			budget: this.state.budget,
 			error_msg: this.state.error_msg,
             succ_msg: this.state.succ_msg
 		});
@@ -210,6 +218,7 @@ export default class ProjectForm extends Component
 			date: this.state.date,
 			system_num: new_SystemNum,
 			contact_id: this.state.contact_id,
+			budget: this.state.budget,
 			error_msg: this.state.error_msg,
             succ_msg: this.state.succ_msg
 		});
@@ -240,6 +249,26 @@ export default class ProjectForm extends Component
 			date: this.state.date,
 			system_num: this.state.system_num,
 			contact_id: rep_id,
+			budget: this.state.budget,
+			error_msg: this.state.error_msg,
+            succ_msg: this.state.succ_msg
+		});
+
+	}
+
+	budgetChange(new_budget)
+	{
+
+		this.setState({
+			
+			id: this.state.id,
+			name: this.state.name,
+			old_job_num: this.state.old_job_num,
+			location: this.state.location,
+			date: this.state.date,
+			system_num: this.state.system_num,
+			contact_id: this.state.contact_id,
+			budget: new_budget,
 			error_msg: this.state.error_msg,
             succ_msg: this.state.succ_msg
 		});
@@ -249,6 +278,54 @@ export default class ProjectForm extends Component
 	render()
 	{
 
+		var name_field = <div className = "form-group">
+					 		{printNeutral("Name: ", <input value={this.state.name} type="text" key ={0} onChange = {(e) => this.nameChange(e.target.value)} className="form-control" id="inputSuccess" />)}
+						</div>;
+
+		var location_field = <div className = "form-group">
+								 {printNeutral("Location: ", <input value={this.state.location} type="text" key ={1} onChange = {(e) => this.locationChange(e.target.value)} className="form-control" id="inputSuccess" />)}
+							</div>;
+
+
+		var job_num_field = <div className = "form-group">
+								 {printNeutral("Job Number: ", <input value = {this.state.old_job_num} type="text" key ={2} onChange = {(e) => this.oldJobNumChange(e.target.value)} className="form-control" id="inputSuccess" />)}
+							</div>;
+
+		var customer_rep_field = <div className = "form-group">
+									 {printNeutral("Customer Rep: ", <Select
+                                                    					key={3}
+                                                    					multi={false}
+                                                    					name="customer_rep"
+                                                    					value={this.state.contact_id}
+                                                    					options={this.props.contacts}
+                                                    					onChange={this.customerRepChange} />)}
+								</div>;
+
+		var date_field =  <div className = "form-group">
+					 			{printNeutral("Date Start: ",<DateTimePicker 
+														onChange = {this.dateChange} 
+														format={"MM/DD/YYYY"} 
+														style = {{width: 200}} 
+														value = {this.state.date}/>)}
+							</div>;
+
+		var budget_field = <div className = "form-group">
+					 		{printNeutral("Budget: ", <input value = {this.state.budget} type="number" pattern="[0-9]*" key ={5} onChange = {(e) => this.budgetChange(e.target.value)} className="form-control" id="inputSuccess" />)}
+						</div>
+
+
+		var fields = [	displayMessage(this.state.succ_msg, this.state.error_msg),
+						name_field,
+						location_field,
+						job_num_field,
+						customer_rep_field,
+						date_field ];
+
+		if(this.props.is_admin)
+		{
+			fields.push(budget_field);
+		}
+
 
 		console.log("State: " + JSON.stringify(this.state));
 
@@ -256,43 +333,9 @@ export default class ProjectForm extends Component
 			
 			<div className = "col-sm-5">
 
-				{displayMessage(this.state.succ_msg, this.state.error_msg)}
-	
-				<div className = "form-group">
-					 {printNeutral("Name: ", <input value={this.state.name} type="text" key ={0} onChange = {(e) => this.nameChange(e.target.value)} className="form-control" id="inputSuccess" />)}
-				</div>		
 
-				<div className = "form-group">
-					 {printNeutral("Location: ", <input value={this.state.location} type="text" key ={0} onChange = {(e) => this.locationChange(e.target.value)} className="form-control" id="inputSuccess" />)}
-				</div>	
-
-
-
-				<div className = "form-group">
-					 {printNeutral("Job Number: ", <input value = {this.state.old_job_num} type="text" key ={0} onChange = {(e) => this.oldJobNumChange(e.target.value)} className="form-control" id="inputSuccess" />)}
-				</div>	
-
-
-				<div className = "form-group">
-					 {printNeutral("Customer Rep: ", <Select
-                                                    	key={7}
-                                                    	multi={false}
-                                                    	name="customer_rep"
-                                                    	value={this.state.contact_id}
-                                                    	options={this.props.contacts}
-                                                    	onChange={this.customerRepChange} />)}
-				</div>	
-
-
-
-				<div className = "form-group">
-					 {printNeutral("Date Start: ",<DateTimePicker 
-														onChange = {this.dateChange} 
-														format={"MM/DD/YYYY"} 
-														style = {{width: 200}} 
-														value = {this.state.date}/>)}
-				</div>	
-
+				
+				{fields}
 				
 
 				<OnSiteButton onClick = {this.handleSubmit} text = "Save Project" />

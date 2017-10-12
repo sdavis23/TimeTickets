@@ -87,7 +87,37 @@ function loadLookup(url, f_key, f_val)
 
 }
 
+export function loadDraftColours()
+{
+  return loadFromLaravel("/draft_colour_json", function(d){ return d; });
+}
 
+export function loadEmployeeProjectData(emp_id)
+{
+  return loadFromLaravel("/project_task_employee_json/" + emp_id, function(emp){ return emp; });
+}
+
+export function loadTaskLookup()
+{
+
+  //console.log("Loading Occupations");
+  return loadLookup("/task_index", function(task){return task.id; }, function(task){ return task; });
+
+}
+
+export function loadEmployeeLookup()
+{
+
+  //console.log("Loading Occupations");
+  return loadLookup("/employees", function(emp){return emp.id; }, function(emp){ return emp; });
+
+}
+
+export function loadProjectCompletions()
+{
+
+  return loadFromLaravel("/project_percentages", function(d){ return d; });
+}
 
 function loadOccupationLookup()
 {
@@ -373,6 +403,30 @@ export function loadDailyTicketEditData(workticket_id)
 
     });
 
+}
+
+export function loadProjectTasks(project_id)
+{
+
+  return loadFromLaravel("/project_task_json/" + project_id, function(data){ return data; });
+
+}
+
+export function loadProjectTaskIndex()
+{
+  return loadFromLaravel("/project_task_index", function(data){return data; });
+}
+
+export function loadTask(id)
+{
+
+  return loadFromLaravel("/task_json/" + id, function(data){ return data; });
+}
+
+export function loadTaskIndex()
+{
+
+  return loadFromLaravel("/task_index", function(data){return data; });
 }
 
 export function loadProjectIndex()

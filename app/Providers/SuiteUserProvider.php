@@ -43,10 +43,18 @@ class SuiteUserProvider implements \Illuminate\Contracts\Auth\UserProvider
 
     	//echo "HELLO FROM SUITE USER PROVIDER";
 
+        // try to grab an employee
+        $employee = $suite->getByEmailAddress( $credentials['email']);
 
+    	if(count($employee) > 0)
+        {
+            return $employee[0];
+        }
 
-    	return $suite->getByEmailAddress( $credentials['email'])[0];
-
+        else
+        {
+            return null;
+        }
 
     }
     

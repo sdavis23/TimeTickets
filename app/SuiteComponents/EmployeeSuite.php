@@ -17,11 +17,24 @@ class Employee implements \JsonSerializable, Authenticatable
 	public $occupation_ids;
 	public $email;
 	public $is_admin;
+	public $is_draftsmen;
+	public $trello_username;
+	public $trello_token;
 
 	private $remember_token_c;
 	private $gprofile_token;
 
-	public function __construct($id, $firstName, $lastName, $id_token, $is_admin, $email, $occupation_ids, $initials)
+	public function __construct($id, 
+								$firstName, 
+								$lastName, 
+								$id_token, 
+								$is_admin, 
+								$email,
+								$occupation_ids, 
+								$initials, 
+								$is_draftsmen, 
+								$trello_username, 
+								$trello_token)
 	{
 
 		$this->id = $id;
@@ -32,6 +45,9 @@ class Employee implements \JsonSerializable, Authenticatable
 		$this->gprofile_token = $id_token;
 		$this->email = $email;
 		$this->is_admin = $is_admin;
+		$this->is_draftsmen = $is_draftsmen;
+		$this->trello_username = $trello_username;
+		$this->trello_token = $trello_token;
 
 	}
 
@@ -44,7 +60,10 @@ class Employee implements \JsonSerializable, Authenticatable
             'last_name' => $this->last_name,
             'occ_list' => $this->occupation_ids,
             'email' => $this->email,
-            'initials' => $this->initials
+            'initials' => $this->initials,
+            "is_draftsmen" => $this->is_draftsmen,
+            "trello_username" => $this->trello_username,
+            "trello_token" => $this->trello_token
         ];
     }
 
@@ -119,33 +138,65 @@ class EmployeeSuite extends SuiteTimeTicketModelController
 							$employee->is_admin_c->value,
 							$employee->email_c->value,
 							$occ_ids,
-							$employee->initials->value);
+							$employee->initials->value,
+							$employee->is_draftsmen_c->value,
+							$employee->trello_username_c->value, 
+							$employee->trello_token_c->value);
 
 	}
 
+
+	private function saveTrelloID($id, $trello_id)
+	{
+
+		$record_vals = array("trello_user_id_c" => $trello_id );
+
+		$this->client->saveExistingRecord($this->moduleName(), $id, $record_vals);
+		
+		return $this->successResponse("Saved USER");
+	}
 	
+	
+
+	public function updateEmployees($users)
+	{
+
+		
+
+		for($i = 0; $i < count($users); $i++)
+		{
+
+			$username = $users[$i]['username'];
+			$id = $users[$i]['id'];
+
+			$trello_username = $this->getModelObjects("trello_username_c = '" . $username . "'", "", 1);
+
+			if(count($trello_username) > 0)
+			{
+
+				$this->saveTrelloID($trello_username[0]->id, $id);
+
+			}
+		
+		}
+
+	}
 
 	public function saveRememberToken($token, $id)
 	{
 
-		$record_vals = array(	
-								"remember_token_c" => $token );
+		$record_vals = array("remember_token_c" => $token );
 
 		
-
-
 		$result = $this->client->saveExistingRecord($this->moduleName(), $id, $record_vals);
 		
-
-		
-
 	}
 
 	public function getModelById($id)
 	{
 		if($id == 'NEW')
 		{
-			return array('id' => $id, 'first_name' => "", 'last_name' => "", 'occ_list' => [], "initials" => '', "email" => "" );
+			return array('id' => $id, 'first_name' => "", 'last_name' => "", 'occ_list' => [], "initials" => '', "email" => "", "trello_token" => "", "trello_username" => "");
 
 		}
 		else
@@ -155,6 +206,51 @@ class EmployeeSuite extends SuiteTimeTicketModelController
 
 		}
 
+	}
+
+	/**
+	* @return the users that have a non-empty trello username
+	*/
+	public function getTrelloUsers()
+	{
+
+		$all_employees = $this->get_employee_list();
+
+		return
+			array_values(array_filter($all_employees, 
+				function($employee) 
+				{
+
+					return strlen($employee->trello_username) > 0;
+				}));
+
+		
+	}
+
+	/**
+	* Checks if the employee with $id is indeed, the only user with the 
+	*	trello username treloo
+	*	
+	* @param username - the trello username we are checking for uniqueness
+	* @param id -the id for which we want the trello username to be unique
+	* @return true if unique, false otherwise
+	*/
+	public function checkTrelloUnique($username, $id)
+	{
+
+		$all_employees = $this->get_employee_list();
+
+		$same_trello =
+			array_values(array_filter($all_employees, 
+				function($employee) use ($username, $id)
+				{
+
+					return ($employee->trello_username == $username) 
+							&&    ($employee->id != $id);
+
+				}));
+
+		return count($same_trello) == 0;
 	}
 
 	public function getByEmailAddress($email)
@@ -180,7 +276,7 @@ class EmployeeSuite extends SuiteTimeTicketModelController
 		MSG - is only the id on a success
 		FAIL - is the message to print to the user
 	*/
-	public function save($id, $first_name, $last_name, $initials, $is_Admin, $email, $occ_ids)
+	public function save($id, $first_name, $last_name, $initials, $is_Admin, $email, $occ_ids, $is_draftsmen, $trello_username, $trello_token)
 	{
 
 		$record_vals = array(	
@@ -188,9 +284,13 @@ class EmployeeSuite extends SuiteTimeTicketModelController
 								"last_name" => $last_name,
 								"is_admin_c" => $is_Admin,
 								"initials" => $initials,
-								"email1" => $email );
+								"email1" => $email ,
+								"is_draftsmen_c" => $is_draftsmen,
+								"trello_username_c" => $trello_username,
+								"trello_token_c" => $trello_token);
 
 		$same_email = $this->getByEmailAddress($email);
+		
 
 
 		if(strlen($initials) == 0)
@@ -214,6 +314,14 @@ class EmployeeSuite extends SuiteTimeTicketModelController
 		}
 
 
+
+		else if(strlen($trello_username) > 0 && !$this->checkTrelloUnique($trello_username, $id) )
+		{
+			return array("status" => "FAIL", "msg" => "Error: There is another employee with the Trello Username: " . $trello_username);
+		}
+
+
+
 		else
 		{
 
@@ -223,6 +331,7 @@ class EmployeeSuite extends SuiteTimeTicketModelController
 				$result = $this->client->saveNewRecord($this->moduleName(), $record_vals);
 			//return $client->setRelationship($this->moduleName(), $result->id, $employee_id, 'ttick_labour_lineitems_ttick_employee');
 			}
+
 
 			else
 			{
@@ -247,9 +356,16 @@ class EmployeeSuite extends SuiteTimeTicketModelController
 
 	protected function getFields()
 	{
-		return array( 'id', 'first_name', 'last_name', 'initials', 'email_c', 'remember_token_c', 'gprofile_id_c', 'is_admin_c');
+		return array( 'id', 'first_name', 'last_name', 'initials', 'email_c', 'remember_token_c', 'trello_token_c',
+										  'gprofile_id_c', 'is_admin_c', 'is_draftsmen_c', "trello_username_c");
 	}
 
+
+	public function index()
+	{
+
+		return $this->getModelObjects( "", "last_name", 70);
+	}
 
 	/*
 
@@ -261,7 +377,7 @@ class EmployeeSuite extends SuiteTimeTicketModelController
 	public function get_employee_list()
 	{
 
-		return $this->getModelObjects( "", "last_name", 70);
+		return $this->index();
 	}
 
 

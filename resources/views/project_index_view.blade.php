@@ -9,7 +9,7 @@
            $(document).ready(function()
            {
             
-            	loadProjectIndexTable();
+            	loadProjectIndexTable({{Auth::user()->is_admin}});
            });
            
 
